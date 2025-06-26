@@ -132,6 +132,12 @@ async function getTasksByUser(userId) {
 module.exports = { createTask, getTasksByUser };
 ```
 
+createTask saves the userId as a reference to the user field.
+
+populate("user") in getTasksForUser replaces the user ID with the full user object.
+
+Example: Instead of { user: "123" }, you get { user: { _id: "123", username: "bob" } }.
+
 ## 4. Set up routers to test your controllers
 
 Create a `routes/usersRouter.js`:
@@ -244,6 +250,13 @@ router.post(
 
 module.exports = router;
 ```
+body("username").notEmpty() ensures the request includes a non-empty username field.
+
+validationResult(req) gathers errors, if any, and we return them early before running controller logic.
+
+You can add more .withMessage() strings to customize messages for users or API clients.
+
+
 
 Now add validation to the tasks route.  
 We’ll check that:
@@ -279,6 +292,15 @@ router.post(
   }
 );
 
+```
+
+body("title").notEmpty() ensures we get a task title.
+
+body("user").isMongoId() checks that the user field is a valid format for MongoDB’s ObjectId. This helps catch copy-paste or client-side errors before trying to insert into the DB.
+
+If either check fails, we return a 400-level response with a clear message.
+
+```
 router.get(
   "/user/:userId",
   param("userId").isMongoId().withMessage("Invalid user ID"),
@@ -297,8 +319,15 @@ router.get(
   }
 );
 
+
 module.exports = router;
 ```
+param("userId").isMongoId() ensures the URL param is a valid ObjectId before running any queries.
+
+If this fails, we avoid calling the controller and instead return a helpful message.
+
+This is important because invalid IDs can crash MongoDB queries or return confusing errors.
+
 
 ## 8. Test validation in Postman
 
