@@ -23,7 +23,7 @@ const taskSchema = new mongoose.Schema({
 Start by installing dependencies:
 
 ```bash
-npm install express mongoose dotenv
+npm install express mongoose dotenv morgan
 ```
 
 ## 1. Create the User model
